@@ -198,7 +198,7 @@ export class ArchivenumberPage implements OnInit {
       this.seconds = '0'+ this.seconds;
     this.genaratedFullDate = this.year+""+this.month+""+this.day+this.hour+this.minutes+this.seconds;
     let sendValues = {'mainUserName':this.mainUserName,'userName':this.userName,'password':this.password,'apiKey':this.apiKey,'onliceData':2,'page':`${this.page}`};
-    this.chatService.chatGetHistoryUser(sendValues).then(async data=>{
+     this.chatService.chatGetHistoryUser(sendValues).then(async data=>{
       this.returnResultData = data;
       let errorData = this.returnResultData.message;
       if(errorData == 'ok'){
@@ -209,16 +209,24 @@ export class ArchivenumberPage implements OnInit {
         }
         else
           counter = this.returnChatArray.length;
-          let countOfData = 0;
-          this.returnArrayChatFromServer = this.returnResultData.data;
+          let mobiles = this.returnResultData.data;
           let namesArray = this.returnResultData.name;
-          Object.keys(this.returnArrayChatFromServer).forEach(key => {
-            this.returnChatArray[counter]=[];
-            this.returnChatArray[counter]['mobile'] = this.returnArrayChatFromServer[key];
-            this.returnChatArray[counter]['name'] = (namesArray[key] && namesArray[key] !== null) ? namesArray[key] : this.returnArrayChatFromServer[key];
+          let lastSendArray = this.returnResultData.lastSend;
+          let merged = Object.keys(mobiles).map(key => {
+            return {
+              mobile: mobiles[key],
+              name: (namesArray[key] && namesArray[key] !== null) ? namesArray[key] : mobiles[key],
+              lastSend: lastSendArray[key]
+            };
+          });
+          merged.sort((a, b) => b.lastSend.localeCompare(a.lastSend));
+          merged.forEach(item => {
+            this.returnChatArray[counter] = [];
+            this.returnChatArray[counter]['mobile'] = item.mobile;
+            this.returnChatArray[counter]['name'] = item.name;
             counter++;
           });
-          countOfData = this.returnChatArray.length;
+          let countOfData = this.returnChatArray.length;
           if(countOfData == 0)
             this.chatVal = 0;
           else{
